@@ -222,7 +222,8 @@ const TYPE = {
   BG: 1, // 背景切换 [1, "bg_name"]
   DIALOGUE: 2, // 对话 [2, "说话人", "内容", [立绘列表]]
   SELECT: 3, // 选项 [3, [["文字", "跳转", "表达式"]]]
-  TITLE: 4 // 章节标题 [4, "章节标题"]
+  TITLE: 4, // 章节标题 [4, "章节标题"]
+  JUMP: 5 // 跳转 [5, "label_name"]
 }
 
 const SETTINGS_KEY = "settings"
@@ -559,18 +560,35 @@ export default {
 
       case TYPE.TITLE:
         this.currentChapterName = node[1]
-        if (CONFIG.DEBUG) console.log("[Game] 新章节名称: " + this.currentChapterName)
+        if (CONFIG.DEBUG) {
+          console.log("[Game] 新章节名称: " + this.currentChapterName)
 
-        // 提示玩家进入新章节
-        if (CONFIG.DEBUG)
           prompt.showToast({
             message: this.currentChapterName,
             duration: 2000
           })
+        }
 
-        // 标题是元数据，不阻塞剧情，自动运行下一行
         this.currentLineIndex++
         this.showLine()
+        break
+
+      case TYPE.JUMP:
+        // 跳转 [5, "label_name"]
+        const targetLabel = node[1]
+        const jumpIndex = this.scriptData.findIndex(
+          (item) => item[0] === TYPE.NODE && item[1] === targetLabel
+        )
+
+        if (jumpIndex !== -1) {
+          this.currentLineIndex = jumpIndex
+          if (CONFIG.DEBUG) console.info("[Game] 跳转至节点：" + targetLabel)
+          this.showLine()
+        } else {
+          if (CONFIG.DEBUG) console.error("[Game] 跳转目标未找到：" + targetLabel)
+          this.currentLineIndex++
+          this.showLine()
+        }
         break
     }
   },

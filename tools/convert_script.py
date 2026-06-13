@@ -76,6 +76,7 @@ def to_arrays(raw_data):
             if isinstance(control, dict):
                 for cmd in control.get("data", []):
                     if not isinstance(cmd, list) or len(cmd) < 3: continue
+
                     # 背景处理
                     if cmd[1] == "stage":
                         current_bg = cmd[2].get("redraw", {}).get("imageFile", {}).get("file")
@@ -107,6 +108,20 @@ def to_arrays(raw_data):
                 if ch_to_save is not None:
                     dialog.append(ch_to_save)
                 output.append(dialog)
+            
+        # 5: 跳转 -> [5, "label_name"]
+        raw_nexts = scene.get("nexts", [])
+        if raw_nexts and isinstance(raw_nexts, list):
+            for n in raw_nexts:
+                target = n.get("target") or n.get("tag")
+
+                if target:
+                    # 如果不为空且不以 * 开头，则强制补上，有时target与实际节点有偏差
+                    if not target.startswith("*"): 
+                        target = "*" + target
+                        
+                    output.append([5, target])
+                    break         
 
         # 3: 选项 -> [3, [["文字", "跳转"], ["文字", "跳转"]]]
         raw_sels = scene.get("selects", [])
@@ -118,7 +133,7 @@ def to_arrays(raw_data):
                 # 提取 target 或 tag
                 target = s.get("target") or s.get("tag") or ""
                 
-                # 如果不为空且不以 * 开头，则强制补上，有时target与实际节点有偏差
+                # 与上文补全跳转一致，强制补上 *
                 if target and not target.startswith("*"):
                     target = "*" + target
                 
