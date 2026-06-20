@@ -274,9 +274,9 @@ export default {
             const parsed = JSON.parse(data)
             this.settings.textSpeed = parsed.textSpeed
             this.settings.textSize = parsed.textSize
-            if (CONFIG.DEBUG) console.log("[Game] 设置加载成功")
+            if (CONFIG.DEBUG) console.log("[Game/System] 设置加载成功")
           } catch (e) {
-            if (CONFIG.DEBUG) console.error("[Game] 解析设置失败")
+            if (CONFIG.DEBUG) console.error("[Game/System] 解析设置失败")
           }
         }
       }
@@ -288,7 +288,7 @@ export default {
     const stateToLoad = this.$app.$def.globalGameState
 
     if (stateToLoad) {
-      if (CONFIG.DEBUG) console.log("[Game] 恢复存档状态:", stateToLoad)
+      if (CONFIG.DEBUG) console.log("[Game/IO] 恢复存档状态:", stateToLoad)
 
       // 读取存档内容
       const targetScnId = stateToLoad.currentScnId || "001"
@@ -349,7 +349,7 @@ export default {
 
         // 渲染文本为最后一行对话（可选，让画面不至于太突兀）
         this.isTextComplete = true
-        if (CONFIG.DEBUG) console.log("[Game] 停止于选项")
+        if (CONFIG.DEBUG) console.log("[Game/Engine] 快进停止于选项")
         return // 退出函数，等待玩家操作
       }
 
@@ -362,7 +362,7 @@ export default {
       if (type === TYPE.BG) {
         const bg = node[1]
         this.currentBg = bg
-        if (CONFIG.DEBUG) console.log("[Game] 背景更新：" + bg)
+        if (CONFIG.DEBUG) console.log("[Game/Engine] 背景更新：" + bg)
       }
 
       // 更新章节名称
@@ -449,21 +449,19 @@ export default {
       this.currentLineIndex = parseInt(startIndex, 10)
 
       if (savedBg) {
-        if (CONFIG.DEBUG) console.log("[Game] 应用存档背景: " + savedBg)
+        if (CONFIG.DEBUG) console.log("[Game/IO] 应用存档背景: " + savedBg)
         this.currentBg = savedBg
       }
 
-      if (CONFIG.DEBUG) console.log(`[Game] 加载场景：id=${id}, startIndex=${startIndex}`)
-
       this.isLoading = false
 
-      if (CONFIG.DEBUG) console.log(`[Game] ${id} 加载成功，当前行:${startIndex}`)
+      if (CONFIG.DEBUG) console.log(`[Game/IO] ${id} 加载成功，startIndex: ${startIndex}`)
 
       this.showLine()
     } catch (error) {
       this.isLoading = false
       this.displayText = "错误: " + error.message
-      if (CONFIG.DEBUG) console.error(error.message)
+      if (CONFIG.DEBUG) console.error("[Game/IO] 场景加载失败: " + error.message)
     }
   },
 
@@ -491,17 +489,18 @@ export default {
     const next = this.getNextScn(this.currentScnId, this.userSelectedRoute || "common")
 
     if (next) {
-      if (CONFIG.DEBUG) console.log(`[Game] 准备进入下一章节: ${next.name}`)
+      if (CONFIG.DEBUG) console.log(`[Game/Engine] 准备进入下一章节: ${next.name}`)
       this.currentScnId = next.id
       this.loadScenario(next.id)
     } else {
+      if (CONFIG.DEBUG) console.warn("[Game/Engine] 未找到后续章节，结束")
       prompt.showToast({message: "游戏结束"})
     }
   },
 
   showLine() {
     if (!this.scriptData || this.scriptData.length === 0) {
-      if (CONFIG.DEBUG) console.log("[Game] 等待剧本加载...")
+      if (CONFIG.DEBUG) console.warn("[Game/Engine] 等待剧本加载...")
       return
     }
 
@@ -522,7 +521,7 @@ export default {
     switch (type) {
       case TYPE.NODE:
         // 标签，记录日志并自动跳到下一行
-        if (CONFIG.DEBUG) console.log("[Game] 进入节点: " + node[1])
+        if (CONFIG.DEBUG) console.log("[Game/Engine] 进入节点: " + node[1])
         this.currentLineIndex++
         this.showLine()
         break
@@ -539,11 +538,10 @@ export default {
         this.currentSpeaker = node[1] || ""
         this.fullText = node[2] || ""
 
-        // 立绘更新 (数组长度大于3，说明有立绘数据)
-        // TODO:立绘实现
+        // 立绘更新 (数组长度大于3说明有立绘数据)
+        // TODO: 立绘实现
         //if (node.length > 3) {
-        //this.currentCharacters = node[3]; // 这里你可以根据需要处理立绘显示逻辑
-        //if (CONFIG.DEBUG) console.log("立绘更新:", this.currentCharacters)
+        //this.currentCharacters = node[3];
         //}
 
         this.displayText = ""
@@ -559,9 +557,11 @@ export default {
         break
 
       case TYPE.TITLE:
+        // 章节标题 [4, "章节标题"]
         this.currentChapterName = node[1]
+
         if (CONFIG.DEBUG) {
-          console.log("[Game] 新章节名称: " + this.currentChapterName)
+          console.log("[Game/Engine] 读取到新章节名称: " + this.currentChapterName)
 
           prompt.showToast({
             message: this.currentChapterName,
@@ -582,10 +582,10 @@ export default {
 
         if (jumpIndex !== -1) {
           this.currentLineIndex = jumpIndex
-          if (CONFIG.DEBUG) console.info("[Game] 跳转至节点：" + targetLabel)
+          if (CONFIG.DEBUG) console.info("[Game/Engine] 跳转至节点：" + targetLabel)
           this.showLine()
         } else {
-          if (CONFIG.DEBUG) console.error("[Game] 跳转目标未找到：" + targetLabel)
+          if (CONFIG.DEBUG) console.error("[Game/Engine] 跳转目标未找到：" + targetLabel)
           this.currentLineIndex++
           this.showLine()
         }
@@ -625,10 +625,10 @@ export default {
   /* 
       剧本有关（解析剧本等）
   */
-  // 表达式解析器，支持简单的赋值和自增
+  // 解析表达式
   runExp(expStr) {
     if (!expStr) return
-    if (CONFIG.DEBUG) console.log("[Game] 执行指令: " + expStr)
+    if (CONFIG.DEBUG) console.log("[Game/System] 执行表达式: " + expStr)
 
     // 按照逗号拆分多条指令 (如 "f.sel_flag=0, f.wak_flag++")
     const parts = expStr.split(",")
@@ -655,11 +655,11 @@ export default {
           this.gameFlags[varName] = isNaN(numVal) ? val : numVal
         }
       } catch (e) {
-        console.error("Exp解析出错: " + cmd)
+        console.error("[Game/System] Exp解析出错: " + cmd + " 错误信息: " + e.message)
       }
     })
 
-    if (CONFIG.DEBUG) console.log("[Game] 当前变量库: ", JSON.stringify(this.gameFlags))
+    if (CONFIG.DEBUG) console.log("[Game/System] 同步后变量库: ", JSON.stringify(this.gameFlags))
   },
 
   // 通过gameFlag确定进入哪条线
@@ -678,11 +678,11 @@ export default {
 
     // 返回分数最高的角色ID，如果最高分是0，就是单身
     if (flagScores[0].score === 0) {
-      if (CONFIG.DEBUG) console.log("[Game] 好感度均为0，单身")
+      if (CONFIG.DEBUG) console.log("[Game/Engine] 好感度均为0，单身")
       return null
     }
 
-    if (CONFIG.DEBUG) console.log(`[Game] 进入 ${flagScores[0].id} 线`)
+    if (CONFIG.DEBUG) console.log(`[Game/Engine] 进入 ${flagScores[0].id} 线`)
     return flagScores[0].id
   },
 
@@ -751,7 +751,7 @@ export default {
         this.currentLineIndex++
         this.showLine()
       } else {
-        if (CONFIG.DEBUG) console.log("[Game] 当前章节结束，尝试进入下一章")
+        if (CONFIG.DEBUG) console.info("[Game/Engine] 当前章节结束，尝试进入下一章")
         this.goToNextScenario()
       }
     }
@@ -777,6 +777,7 @@ export default {
         this.showLine()
       }
     } else {
+      if (CONFIG.DEBUG) console.error("[Game/Engine] 未找到选项跳转标签: " + targetLabel)
       prompt.showToast({message: `未找到标签: ${targetLabel}`})
       this.showOptions = true
     }
@@ -819,7 +820,7 @@ export default {
   handleLongPress() {
     // 便于调试触发菜单
     if (CONFIG.DEBUG) {
-      if (CONFIG.DEBUG) console.log("[Game] 触发长按")
+      if (CONFIG.DEBUG) console.log("[Game/UI] 触发长按")
       this.handleSwipe()
     }
   },
