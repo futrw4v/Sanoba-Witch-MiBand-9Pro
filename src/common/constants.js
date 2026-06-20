@@ -1,4 +1,4 @@
-export const DEBUG = false
+export const DEBUG = true
 export const SETTINGS_KEY = "settings"
 export const SAVE_KEY = "user_save_data"
 
