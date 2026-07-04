@@ -131,6 +131,14 @@ export default {
     }
   },
 
+  onDestroy() {
+    this.clearTimer()
+  },
+
+  onHide() {
+    this.clearTimer()
+  },
+
   onInit() {
     // 读取系统设置（音量、文字速度等）
     storage.get({
@@ -175,7 +183,7 @@ export default {
       // 清除全局变量防止重复触发
       this.$app.$def.globalGameState = null
 
-      if (this.timer) clearTimeout(this.timer)
+      this.clearTimer()
 
       // 加载剧本并跳转到对应行
       this.loadScenario(targetScnId, targetIndex, targetBg)
@@ -325,7 +333,7 @@ export default {
   async loadScenario(id, startIndex = 0, savedBg = null) {
     this.isLoading = true
 
-    if (this.timer) clearTimeout(this.timer)
+    this.clearTimer()
 
     try {
       const fileName = this.getPathById(id)
@@ -500,7 +508,7 @@ export default {
   },
 
   showTypeWriterEffect() {
-    if (this.timer) clearTimeout(this.timer)
+    this.clearTimer()
 
     if (this.currentCharIndex === 0) {
       const scroll = this.$element("dialogueScroll")
@@ -620,7 +628,7 @@ export default {
   },
 
   finishText() {
-    clearTimeout(this.timer)
+    this.clearTimer()
     this.displayText = this.fullText
     this.isTextComplete = true
   },
@@ -745,6 +753,13 @@ export default {
 
   returnToHome() {
     router.replace({uri: "pages/index"})
+  },
+
+  clearTimer() {
+    if (this.timer) {
+      clearTimeout(this.timer)
+      this.timer = null
+    }
   }
 }
 </script>
