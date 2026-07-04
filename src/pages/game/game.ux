@@ -196,69 +196,73 @@ export default {
 
     this.isSkipping = true
 
-    // 抓取文本
     let lastDialogueNode = null
 
     while (this.currentLineIndex < this.scriptData.length) {
       const node = this.scriptData[this.currentLineIndex]
       const type = node[0]
 
-      if (type === SCN_TYPE.SELECT) {
-        // 停止前，同步最后一句对话内容
-        if (lastDialogueNode) {
-          this.currentSpeaker = lastDialogueNode[1] || ""
-          this.fullText = lastDialogueNode[2] || ""
-          this.displayText = this.fullText
+      switch (type) {
+        case SCN_TYPE.SELECT:
+          // 停止前，同步最后一句对话内容
+          if (lastDialogueNode) {
+            this.currentSpeaker = lastDialogueNode[1] || ""
+            this.fullText = lastDialogueNode[2] || ""
+            this.displayText = this.fullText
+            this.isTextComplete = true
+          }
+
+          this.isSkipping = false
+          this.currentOptions = node[1]
+          this.showOptions = true
+
+          // 渲染文本为最后一行对话
           this.isTextComplete = true
-        }
+          if (DEBUG) console.log("[Game/Engine] 快进停止于选项")
+          return // 停止跳过
 
-        this.isSkipping = false
-        this.currentOptions = node[1]
-        this.showOptions = true
+        // 抓取文本
+        case SCN_TYPE.DIALOGUE:
+          lastDialogueNode = node
+          break
 
-        // 渲染文本为最后一行对话
-        this.isTextComplete = true
-        if (DEBUG) console.log("[Game/Engine] 快进停止于选项")
-        return // 退出函数，等待玩家操作
+        case SCN_TYPE.BACKGROUND:
+          // 更新背景防止错乱
+          const bg = node[1]
+          this.currentBg = bg
+
+          if (DEBUG) console.log("[Game/Engine] 背景更新：" + bg)
+          break
+
+        case SCN_TYPE.TITLE:
+          // 更新章节名称
+          this.currentChapterName = node[1]
+          break
+
+        case SCN_TYPE.EV:
+          // 更新EV/SD
+          const evImage = node[1]
+
+          if (evImage === null) {
+            this.currentEV = this.currentSD = "" // 收到null信号则清空
+            if (DEBUG) console.log("[Game/Engine] EV 播放结束")
+          } else if (evImage.startsWith("ev")) {
+            // TODO: EV实现
+            // this.currentEv = evImage
+            if (DEBUG) console.log("[Game/Engine] 播放事件CG：" + evImage)
+          } else if (evImage.startsWith("sd")) {
+            this.currentSD = evImage
+            if (DEBUG) console.log("[Game/Engine] 播放SD：" + evImage)
+          } else {
+            if (DEBUG) console.log("[Game/Engine] 其他事件CG：" + evImage)
+          }
+
+          break
+
+        default:
+          break
       }
 
-      // 抓取文本
-      if (type === SCN_TYPE.DIALOGUE) {
-        lastDialogueNode = node
-      }
-
-      // 更新背景防止错乱
-      if (type === SCN_TYPE.BACKGROUND) {
-        const bg = node[1]
-        this.currentBg = bg
-        if (DEBUG) console.log("[Game/Engine] 背景更新：" + bg)
-      }
-
-      // 更新章节名称
-      if (type === SCN_TYPE.TITLE) {
-        this.currentChapterName = node[1]
-      }
-
-      // 抓取文本
-      if (type === SCN_TYPE.EV) {
-        const evImage = node[1]
-
-        if (evImage === null) {
-          this.currentEV = this.currentSD = "" // 收到null信号则清空
-          if (DEBUG) console.log("[Game/Engine] EV 播放结束")
-        } else if (evImage.startsWith("ev")) {
-          // TODO: EV实现
-          // this.currentEv = evImage
-          if (DEBUG) console.log("[Game/Engine] 播放事件CG：" + evImage)
-        } else if (evImage.startsWith("sd")) {
-          this.currentSD = evImage
-          if (DEBUG) console.log("[Game/Engine] 播放SD：" + evImage)
-        } else {
-          if (DEBUG) console.log("[Game/Engine] 其他事件CG：" + evImage)
-        }
-      }
-
-      // 继续下一行
       this.currentLineIndex++
     }
 
