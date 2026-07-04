@@ -11,7 +11,8 @@ class EventType(IntEnum):
     BACKGROUND = 2  # 背景切换 [2, "bg_name"]
     DIALOGUE = 3  # 对话 [3, "说话人", "内容", [立绘列表]] #立绘列表可空
     SELECT = 4  # 选项 [4, [["文字", "跳转", "表达式"]]]
-    NEXT = 5  # 跳转至（下一章？） [5, "target_label"]
+    EV = 5  # 事件CG [5, "ev_img_name"]
+    NEXT = 6  # 跳转至（下一章？） [6, "target_label"]
 
 
 def to_arrays(raw_data):
@@ -21,6 +22,7 @@ def to_arrays(raw_data):
     last_bg = None
     last_character_state = None
     last_title = None
+    last_ev = None
 
     # 获取scenes场景列表
     scenes = raw_data.get("scenes", []) if isinstance(raw_data, dict) else []
@@ -56,7 +58,6 @@ def to_arrays(raw_data):
             message = line[2] or ""
             command_dict = line[5]
 
-            current_bg = None
             current_characters = []
 
             # 读取控制命令，提取背景 立绘信息
@@ -80,6 +81,22 @@ def to_arrays(raw_data):
                             params.get("redraw", {}).get("imageFile", {}).get("file")
                         )
 
+                        # 处理与写入背景切换 -> [2, "bg_name"]
+                        if current_bg and current_bg != last_bg:
+                            output.append([EventType.BACKGROUND, current_bg])
+                            last_bg = current_bg
+
+                    # 事件
+                    if cmd_type == "event":
+                        current_ev_img = (
+                            params.get("redraw", {}).get("imageFile", {}).get("file")
+                        )
+
+                        # 处理与写入背景切换 -> [2, "bg_name"]
+                        if current_ev_img != last_ev:
+                            output.append([EventType.EV, current_ev_img])
+                            last_ev = current_ev_img
+
                     # 立绘
                     if cmd_type == "character":
                         if params .get("showmode") == 0:
@@ -98,11 +115,6 @@ def to_arrays(raw_data):
                                     opts.get("dress", ""),
                                 ]
                             )
-
-            # 处理与写入背景切换 -> [2, "bg_name"]
-            if current_bg and current_bg != last_bg:
-                output.append([EventType.BACKGROUND, current_bg])
-                last_bg = current_bg
 
             # 处理对话
             character_to_save = None
