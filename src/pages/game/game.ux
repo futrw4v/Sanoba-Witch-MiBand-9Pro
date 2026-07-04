@@ -182,7 +182,7 @@ export default {
     } else {
       // 如果没有存档状态，且当前没在播放剧本，则加载默认进度
       if (!this.scriptData || this.scriptData.length === 0) {
-        this.loadScenario("101", 500)
+        this.loadScenario(this.currentScnId, this.currentLineIndex)
       }
     }
   },
