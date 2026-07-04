@@ -142,10 +142,10 @@ export const SCN_LIST = {
   
 // 剧本节点类型
 export const SCN_TYPE = {
-  NODE: 0, // 标签/跳转点 [0, "label_name"]
-  BG: 1, // 背景切换 [1, "bg_name"]
-  DIALOGUE: 2, // 对话 [2, "说话人", "内容", [立绘列表]]
-  SELECT: 3, // 选项 [3, [["文字", "跳转", "表达式"]]]
-  TITLE: 4, // 章节标题 [4, "章节标题"]
-  JUMP: 5 // 跳转 [5, "label_name"]
+  LABEL : 0,  // 标签/跳转点 [0, "label_name"]
+  CHAPTER_TITLE : 1,  // 章节标题 [1, "章节标题"]
+  BACKGROUND : 2,  // 背景切换 [2, "bg_name"]
+  DIALOGUE : 3,  // 对话 [3, "说话人", "内容", [立绘列表]] // 立绘列表可空
+  SELECT : 4,  // 选项 [4, [["文字", "跳转", "表达式"]]]
+  NEXT : 5,  // 跳转至（下一章？） [5, "target_label"]
 }

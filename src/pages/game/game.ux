@@ -210,7 +210,7 @@ export default {
       }
 
       // 更新背景防止错乱
-      if (type === SCN_TYPE.BG) {
+      if (type === SCN_TYPE.BACKGROUND) {
         const bg = node[1]
         this.currentBg = bg
         if (DEBUG) console.log("[Game/Engine] 背景更新：" + bg)
@@ -370,30 +370,21 @@ export default {
     const type = node[0]
 
     switch (type) {
-      case SCN_TYPE.NODE:
-        // 标签，记录日志并自动跳到下一行
-        if (DEBUG) console.log("[Game/Engine] 进入节点: " + node[1])
-        this.currentLineIndex++
-        this.showLine()
-        break
-
-      case SCN_TYPE.BG:
-        // 切换背景并跳到下一行
+      case SCN_TYPE.BACKGROUND:
         this.currentBg = node[1]
         this.currentLineIndex++
         this.showLine()
         break
 
       case SCN_TYPE.DIALOGUE:
-        // 对话更新 [2, "说话人", "内容", [立绘列表（可选）]]
         this.currentSpeaker = node[1] || ""
         this.fullText = node[2] || ""
 
         // 立绘更新 (数组长度大于3说明有立绘数据)
         // TODO: 立绘实现
-        //if (node.length > 3) {
-        //this.currentCharacters = node[3];
-        //}
+        // if (node.length > 3) {
+        //   this.currentCharacters = node[3];
+        // }
 
         this.displayText = ""
         this.isTextComplete = false
@@ -402,13 +393,11 @@ export default {
         break
 
       case SCN_TYPE.SELECT:
-        // 选项：[3, [["文字", "跳转", "表达式"]]]
         this.currentOptions = node[1]
         this.showOptions = true
         break
 
-      case SCN_TYPE.TITLE:
-        // 章节标题 [4, "章节标题"]
+      case SCN_TYPE.CHAPTER_TITLE:
         this.currentChapterName = node[1]
 
         if (DEBUG) {
@@ -424,11 +413,10 @@ export default {
         this.showLine()
         break
 
-      case SCN_TYPE.JUMP:
-        // 跳转 [5, "label_name"]
+      case SCN_TYPE.NEXT:
         const targetLabel = node[1]
         const jumpIndex = this.scriptData.findIndex(
-          (item) => item[0] === SCN_TYPE.NODE && item[1] === targetLabel
+          (item) => item[0] === SCN_TYPE.LABEL && item[1] === targetLabel
         )
 
         if (jumpIndex !== -1) {
@@ -473,7 +461,7 @@ export default {
     }
   },
 
-  /* 
+  /*
       剧本有关（解析剧本等）
   */
   // 解析表达式
@@ -580,8 +568,8 @@ export default {
     })
   },
 
-  /*  
-      UI相关（点击/侧滑事件等）  
+  /*
+      UI相关（点击/侧滑事件等）
   */
   handleScreenClick() {
     if (this.showSwipeMenu || this.isLoading || this.showOptions) return
@@ -616,7 +604,7 @@ export default {
     }
 
     const targetIndex = this.scriptData.findIndex(
-      (item) => item[0] === SCN_TYPE.NODE && item[1] === targetLabel
+      (item) => item[0] === SCN_TYPE.LABEL && item[1] === targetLabel
     )
 
     if (targetIndex !== -1) {
