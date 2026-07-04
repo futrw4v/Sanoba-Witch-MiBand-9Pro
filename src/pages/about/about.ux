@@ -11,8 +11,10 @@
       <div class="app-card">
         <image class="app-icon" src="/common/logo.png"></image>
         <div class="app-info">
-          <text class="app-name">魔女的夜宴 MiBand 9 Pro移植</text>
+          <text class="app-name">魔女的夜宴/小米手环</text>
           <text class="app-version">Version: {{ appVersion }}</text>
+          <text class="app-version">VersionCode: {{ versionCode }}</text>
+          <text class="app-version">Debug: {{ isDebug ? "是" : "否" }}</text>
         </div>
       </div>
 
@@ -49,11 +51,15 @@ import {DEBUG} from "../../common/constants.js"
 
 export default {
   private: {
-    appVersion: ""
+    appVersion: "",
+    versionCode: 0,
+    isDebug: false
   },
 
   onInit() {
     this.appVersion = manifest.versionName
+    this.versionCode = manifest.versionCode
+    this.isDebug = DEBUG
   },
 
   swipeBack() {
