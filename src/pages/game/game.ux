@@ -429,6 +429,11 @@ export default {
           this.showLine()
         }
         break
+
+      case SCN_TYPE.LABEL:
+        this.currentLineIndex++
+        this.showLine()
+        break
     }
   },
 
