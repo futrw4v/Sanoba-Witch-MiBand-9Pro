@@ -147,5 +147,6 @@ export const SCN_TYPE = {
   BACKGROUND : 2,  // 背景切换 [2, "bg_name"]
   DIALOGUE : 3,  // 对话 [3, "说话人", "内容", [立绘列表]] // 立绘列表可空
   SELECT : 4,  // 选项 [4, [["文字", "跳转", "表达式"]]]
-  NEXT : 5,  // 跳转至（下一章？） [5, "target_label"]
+  EV : 5,  // 事件CG [5, "ev_img_name"]
+  NEXT : 6  // 跳转至（下一章？） [6, "target_label"]
 }
