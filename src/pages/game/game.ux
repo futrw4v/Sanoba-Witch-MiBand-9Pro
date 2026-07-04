@@ -242,7 +242,7 @@ export default {
     const commonIdx = commonList.findIndex((i) => i.id === currentId)
 
     if (commonIdx !== -1) {
-      // 核心分歧点：共通线 019 结束时
+      // 共通线 019 结束时
       if (currentId === "019") {
         const route = this.determineRoute() // 获取得分最高的角色ID
 
@@ -520,13 +520,25 @@ export default {
     // 按分数从高到低排序
     flagScores.sort((a, b) => b.score - a.score)
 
-    // 返回分数最高的角色ID，如果最高分是0，就是单身
+    // 获取分数最高的角色ID，如果最高分是0，单身
     if (flagScores[0].score === 0) {
       if (DEBUG) console.log("[Game/Engine] 好感度均为0，单身")
       return null
     }
 
+    // 若有两个或以上角色的好感度相同，单身
+    if (flagScores[0].score === flagScores[1].score) {
+      if (DEBUG) {
+        console.log(
+          `[Game/Engine] 存在两个或以上好感度相同的角色：${flagScores[0].id}(${flagScores[0].score})/${flagScores[1].id}(${flagScores[1].score})，单身`
+        )
+      }
+
+      return null
+    }
+
     if (DEBUG) console.log(`[Game/Engine] 进入 ${flagScores[0].id} 线`)
+
     return flagScores[0].id
   },
 
