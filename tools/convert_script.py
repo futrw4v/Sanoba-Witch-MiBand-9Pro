@@ -29,15 +29,15 @@ def to_arrays(raw_data):
 
     # 遍历每个场景
     for scene in scenes:
-        # 优先提取章节标题 -> [0, "章节标题"]
+        # 标签/跳转点 -> [1, "label_name"]
+        if "label" in scene and scene["label"]:
+            output.append([EventType.LABEL, scene["label"]])
+
+        # 提取章节标题 -> [0, "章节标题"]
         title = scene.get("title")
         if title and title != last_title:
             output.append([EventType.CHAPTER_TITLE, title])
             last_title = title
-
-        # 标签/跳转点 -> [1, "label_name"]
-        if "label" in scene and scene["label"]:
-            output.append([EventType.LABEL, scene["label"]])
 
         # 解析每个场景下的texts
         texts_blocks = scene.get("texts", [])
