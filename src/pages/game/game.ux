@@ -17,13 +17,13 @@
       src="{{ '/common/sd/' + currentSD + '.jpg' }}"
     ></image>
 
-    <div class="ui-layer">
+    <div class="ui-layer" if="{{ !isLoading && !isSkipping && !showOptions }}">
       <!-- 对话框部分（说话人与打字机） -->
       <div class="speaker-box" if="{{ currentSpeaker }}">
         <text class="speaker-text">{{ currentSpeaker }}</text>
       </div>
 
-      <div class="dialogue-box" if="{{ !isLoading }}">
+      <div class="dialogue-box">
         <scroll scroll-y="true" class="scroll-view" id="dialogueScroll">
           <text
             class="typewriter-text"
@@ -924,7 +924,7 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: 10; /* 提升层级到最前 */
+  z-index: 10;
   background-color: rgba(0, 0, 0, 0.6);
 }
 
@@ -935,7 +935,7 @@ export default {
   margin-bottom: 8px;
 }
 
-/* 选项 */
+/* 选项部分 */
 .options-overlay {
   position: absolute;
   top: 0;
@@ -944,36 +944,35 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
-  flex-direction: column;
-  justify-content: flex-end;
   padding: 20px;
   z-index: 20;
+
+  background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%);
 }
 
 .options-container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 80%;
+  width: 90%;
   display: flex;
   flex-direction: column;
 }
 
 .option-button {
   width: 100%;
-  background-color: rgba(207, 137, 248, 0.8);
-  padding: 15px;
-  margin: 10px 0;
-  border-radius: 10px;
+  background-color: #cf89f88a;
+  padding: 16px;
+  margin: 8px 0;
+  border-radius: 8px;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(207, 137, 248, 0.6);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .option-text {
   color: #ffffff;
   font-size: 18px;
+  font-weight: 700;
   text-align: center;
 }
 </style>
