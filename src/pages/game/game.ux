@@ -49,9 +49,9 @@
     </div>
 
     <!-- 控制层 -->
-    <div class="control-layer">
+    <div class="control-layer" @click="stopClick">
       <!-- 按钮 -->
-      <div class="control-button" onclick="toggleUIVisibility">
+      <div class="control-button" @click="toggleUIVisibility">
         <text>{{ isUIHidden ? "显示" : "隐藏" }}</text>
       </div>
 
@@ -131,12 +131,13 @@ export default {
     gameFlags: {},
 
     // UI有关
-    timer: null,
-    isTextComplete: false,
     showSwipeMenu: false,
     currentTime: "00:00",
     isUIHidden: false,
+    isTextComplete: false,
     isFastForwarding: false,
+    typeWriterTimer: null,
+    fastForwardTimer: null,
 
     // 选项有关
     currentOptions: [],
@@ -351,7 +352,7 @@ export default {
       this.currentCharIndex++
       const speed = this.isFastForwarding ? 2 : this.settings.textSpeed
 
-      this.timer = setTimeout(() => {
+      this.typeWriterTimer = setTimeout(() => {
         this.showTypeWriterEffect()
       }, speed)
 
@@ -592,24 +593,14 @@ export default {
     if (DEBUG) console.log("[Game/UI] UI可见性切换: isUIHidden: " + this.isUIHidden)
   },
 
-  doFastForward() {
-    this.isFastForwarding = true
-    if (DEBUG) console.log("[Game/UI] 快进触发, isFastForwarding: " + this.isFastForwarding)
-  },
-
-  stopFastForward() {
-    this.isFastForwarding = false
-    if (DEBUG) console.log("[Game/UI] 快进停止, isFastForwarding: " + this.isFastForwarding)
-  },
-
   returnToHome() {
     router.replace({uri: "pages/index"})
   },
 
   clearTimer() {
-    if (this.timer) {
-      clearTimeout(this.timer)
-      this.timer = null
+    if (this.typeWriterTimer) {
+      clearTimeout(this.typeWriterTimer)
+      this.typeWriterTimer = null
     }
   }
 }
@@ -840,7 +831,6 @@ export default {
   padding: 4px 10px;
   margin-right: 8px;
   background-color: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   justify-content: center;
   align-items: center;
