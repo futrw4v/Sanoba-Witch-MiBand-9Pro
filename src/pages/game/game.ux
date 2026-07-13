@@ -61,7 +61,7 @@
         ontouchend="stopFastForward"
         if="{{ !isUIHidden }}"
       >
-        <text>快进</text>
+        <text class="control-button-text">快进</text>
       </div>
     </div>
 
@@ -836,7 +836,7 @@ export default {
   align-items: center;
 }
 
-.control-button text {
+.control-button-text {
   color: #ffffff;
   font-size: 24px;
 }
