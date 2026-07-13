@@ -17,7 +17,7 @@
       src="{{ '/common/sd/' + currentSD + '.jpg' }}"
     ></image>
 
-    <div class="ui-layer" if="{{ !isLoading && !isSkipping && !showOptions }}">
+    <div class="dialogue-layer" if="{{ !isLoading && !isSkipping && !showOptions && !isUIHidden }}">
       <!-- 对话框部分（说话人与打字机） -->
       <div class="speaker-box" if="{{ currentSpeaker }}">
         <text class="speaker-text">{{ currentSpeaker }}</text>
@@ -36,7 +36,7 @@
     </div>
 
     <!-- 选项按钮 -->
-    <div class="options-overlay" if="{{ showOptions }}">
+    <div class="options-overlay" if="{{ showOptions && !isUIHidden }}">
       <div class="options-container">
         <div
           for="{{ (index, item) in currentOptions }}"
@@ -45,6 +45,14 @@
         >
           <text class="option-text">{{ item[0] }}</text>
         </div>
+      </div>
+    </div>
+
+    <!-- 控制层 -->
+    <div class="control-layer">
+      <!-- 按钮 -->
+      <div class="control-button" onclick="toggleUIVisibility">
+        <text>{{ isUIHidden ? "显示" : "隐藏" }}</text>
       </div>
     </div>
 
@@ -64,20 +72,20 @@
         <text class="menu-title">菜单</text>
 
         <div class="menu-grid">
-          <div class="menu-btn" @click="saveGame">
-            <text class="btn-text">保存进度</text>
+          <div class="menu-button" @click="saveGame">
+            <text class="menu-button-text">保存进度</text>
           </div>
-          <div class="menu-btn" @click="routeLoad">
-            <text class="btn-text">读取进度</text>
+          <div class="menu-button" @click="routeLoad">
+            <text class="menu-button-text">读取进度</text>
           </div>
-          <div class="menu-btn" @click="skipToOptions">
-            <text class="btn-text">跳过到下一个选项</text>
+          <div class="menu-button" @click="skipToOptions">
+            <text class="menu-button-text">跳过到下一个选项</text>
           </div>
-          <div class="menu-btn" @click="returnToHome">
-            <text class="btn-text">返回主页</text>
+          <div class="menu-button" @click="returnToHome">
+            <text class="menu-button-text">返回主页</text>
           </div>
-          <div class="menu-btn close-btn" @click="closeMenu">
-            <text class="btn-text">返回游戏</text>
+          <div class="menu-button close-button" @click="closeMenu">
+            <text class="menu-button-text">返回游戏</text>
           </div>
         </div>
       </div>
@@ -117,6 +125,7 @@ export default {
     isTextComplete: false,
     showSwipeMenu: false,
     currentTime: "00:00",
+    isUIHidden: false,
 
     // 选项有关
     currentOptions: [],
@@ -520,10 +529,11 @@ export default {
     if (this.currentCharIndex < this.fullText.length) {
       this.displayText += this.fullText.charAt(this.currentCharIndex)
       this.currentCharIndex++
+      const speed = this.isFastForwarding ? 2 : this.settings.textSpeed
 
       this.timer = setTimeout(() => {
         this.showTypeWriterEffect()
-      }, this.settings.textSpeed)
+      }, speed)
 
       if (this.currentCharIndex % 5 === 0 && this.displayText.length > 20) {
         const scroll = this.$element("dialogueScroll")
@@ -661,6 +671,12 @@ export default {
   handleScreenClick() {
     if (this.showSwipeMenu || this.isLoading || this.showOptions) return
 
+    // UI隐藏时点击屏幕显示UI
+    if (this.isUIHidden) {
+      this.toggleUIVisibility()
+      return
+    }
+
     if (this.isSkipping) {
       // 快进时，遇到选项已经暂停，如果用户再次点击（其实选项已弹出不会走到这），
       // 但以防万一,如果不在选项状态则继续快进
@@ -751,6 +767,12 @@ export default {
     }
   },
 
+  toggleUIVisibility() {
+    this.isUIHidden = !this.isUIHidden
+
+    if (DEBUG) console.log("[Game/UI] UI可见性切换: isUIHidden: " + this.isUIHidden)
+  },
+
   returnToHome() {
     router.replace({uri: "pages/index"})
   },
@@ -795,7 +817,7 @@ export default {
   z-index: 5; /* 层级高于背景 */
 }
 
-.ui-layer {
+.dialogue-layer {
   flex-direction: column;
   justify-content: flex-end;
   padding: 20px;
@@ -897,7 +919,7 @@ export default {
 }
 
 /* 按钮样式 */
-.menu-btn {
+.menu-button {
   width: 100%;
   height: 60px;
   margin-bottom: 10px;
@@ -907,12 +929,12 @@ export default {
   align-items: center;
 }
 
-.close-btn {
+.close-button {
   background-color: rgba(207, 137, 248, 0.3);
   margin-top: 10px;
 }
 
-.btn-text {
+.menu-button-text {
   color: #ffffff;
   font-size: 18px;
 }
@@ -974,5 +996,29 @@ export default {
   font-size: 18px;
   font-weight: 700;
   text-align: center;
+}
+
+/* 控制层 */
+.control-layer {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  flex-direction: row;
+  z-index: 15;
+}
+
+.control-button {
+  padding: 4px 10px;
+  margin-right: 8px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.control-button text {
+  color: #ffffff;
+  font-size: 24px;
 }
 </style>
