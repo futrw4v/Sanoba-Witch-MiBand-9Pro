@@ -52,7 +52,7 @@
     <div class="control-layer" @click="stopClick">
       <!-- 按钮 -->
       <div class="control-button" @click="toggleUIVisibility">
-        <text>{{ isUIHidden ? "显示" : "隐藏" }}</text>
+        <text class="control-button-text">{{ isUIHidden ? "显示" : "隐藏" }}</text>
       </div>
 
       <div
